@@ -1,0 +1,4 @@
+.vscode
+_esy
+esy.lock
+node_modules

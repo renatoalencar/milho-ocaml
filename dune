@@ -1,0 +1,3 @@
+(executable
+ (name milho)
+ (public_name milho.exe))
