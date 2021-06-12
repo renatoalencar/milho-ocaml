@@ -8,6 +8,7 @@ type t =
 | True
 | False
 | Nil
+| Quote of t
 
 let rec to_string v =
   match v with
@@ -21,3 +22,4 @@ let rec to_string v =
   | False -> "False"
   | True -> "True"
   | Nil -> "Nil"
+  | Quote v -> "'" ^ (to_string v)

@@ -2,11 +2,6 @@ exception Variable_not_found of string
 
 type t = (string, Value.t) Hashtbl.t list
 
-
-let let_ args =
-  Milho_core.println args |> ignore;
-  Value.Nil
-
 let init () =
   let builtin =
     let tbl = Hashtbl.create 10 in
@@ -16,8 +11,6 @@ let init () =
       Hashtbl.add tbl "/" (Value.Function Milho_core.div);
 
       Hashtbl.add tbl "println" (Value.Function Milho_core.println);
-
-      Hashtbl.add tbl "let" (Value.Macro let_);
       tbl
   in
     [builtin]
@@ -29,6 +22,10 @@ let def scope name value =
 let push scope name value =
   let tbl = Hashtbl.create 1024 in
     Hashtbl.add tbl name value;
+    tbl :: scope
+
+let push_empty scope =
+  let tbl = Hashtbl.create 1024 in
     tbl :: scope
 
 let rec find scope name =

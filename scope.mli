@@ -7,5 +7,6 @@ val init : unit -> t
 
 val def : t -> string -> Value.t -> unit
 val push : t -> string -> Value.t -> t
+val push_empty : t -> t
 
 val find : t -> string -> Value.t
