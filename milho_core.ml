@@ -1,3 +1,5 @@
+exception Invalid_argument of string
+
 let sum args =
   let sum a b =
     match a, b with
@@ -43,6 +45,29 @@ let div args =
     | _ -> Value.Nil
   in
     List.fold_left div Value.Nil args
+
+let abs args =
+  match args with
+  | Value.Number (n, d) :: [] ->
+    Value.Number (Stdlib.abs n, Stdlib.abs d)
+  | _ -> raise (Invalid_argument "Milho_core.abs")
+
+let cmp args =
+  match args with
+  | a :: b :: _ ->
+    let a = abs [a] in
+    let b = abs [b] in
+      sub [a; b]
+  | _ -> Value.Nil
+
+let less_than args =
+  match cmp args with
+  | Value.Number (n, _) ->
+    if n < 0 then
+      Value.True
+    else
+      Value.False
+  | _ -> raise (Invalid_argument "Milho_core.less_than")
 
 let str args =
   args

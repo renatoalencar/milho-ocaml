@@ -20,7 +20,7 @@ let expect_symbol message value =
 let expect_list message value =
   match value with
   | Value.List lst -> lst
-  | value -> raise (Runtime_error (message ^(Value.to_string value)))
+  | value -> raise (Runtime_error (message ^ (Value.to_string value)))
 
 let rec value_of_expression exp =
   match exp with
@@ -44,6 +44,7 @@ let rec eval scope exp =
       | Value.Symbol "let" -> let_binding scope args
       | Value.Symbol "def" -> def_binding scope args
       | Value.Symbol "fn" -> anon_fn scope args
+      | Value.Symbol "if" -> if_form scope args
       | f -> (
         match eval scope f with
         | Value.Function f' -> f' (List.map (eval scope) args)
@@ -92,3 +93,16 @@ and anon_fn scope args_and_body =
     |> eval_list (bind_arguments args)
   in
     Value.Function fn
+and if_form scope forms =
+  match forms with
+  | predicate :: consequense :: [] ->
+    if predicate |> eval scope |> Value.to_boolean then
+      eval scope consequense
+    else
+      Value.Nil
+  | predicate :: consequense :: otherwise :: [] ->
+    if predicate |> eval scope |> Value.to_boolean then
+      eval scope consequense
+    else
+      eval scope otherwise
+  | _ -> Value.Nil

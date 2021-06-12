@@ -23,3 +23,13 @@ let rec to_string v =
   | True -> "True"
   | Nil -> "Nil"
   | Quote v -> "'" ^ (to_string v)
+
+let rec to_boolean v =
+  match v with
+  | List [] -> false
+  | Number (0, _) -> false
+  | String "" -> false
+  | False -> false
+  | Nil -> false
+  | Quote v -> to_boolean v
+  | _ -> true

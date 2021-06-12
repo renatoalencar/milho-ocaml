@@ -10,6 +10,8 @@ let init () =
       Hashtbl.add tbl "*" (Value.Function Milho_core.mul);
       Hashtbl.add tbl "/" (Value.Function Milho_core.div);
 
+      Hashtbl.add tbl "<" (Value.Function Milho_core.less_than);
+
       Hashtbl.add tbl "println" (Value.Function Milho_core.println);
       tbl
   in
