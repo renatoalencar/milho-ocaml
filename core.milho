@@ -1,0 +1,14 @@
+
+(def defmacro
+  (macro (name-and-args body)
+    (let (name (car name-and-args)
+          args (cdr name-and-args))
+      (cons 'def name (cons 'macro args body '()) '()))))
+
+(defmacro (defn name-and-args body)
+  (let (name (car name-and-args)
+        args (cdr name-and-args))
+    (cons 'def name (cons 'fn args body '()) '())))
+
+(defn (abs x)
+  (if (< x 0) (- x) x))

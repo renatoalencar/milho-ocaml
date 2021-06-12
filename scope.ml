@@ -11,6 +11,12 @@ let init () =
       Hashtbl.add tbl "/" (Value.Function Milho_core.div);
 
       Hashtbl.add tbl "<" (Value.Function Milho_core.less_than);
+      Hashtbl.add tbl ">" (Value.Function Milho_core.greater_than);
+      Hashtbl.add tbl "=" (Value.Function Milho_core.equal);
+
+      Hashtbl.add tbl "cons" (Value.Function Milho_core.cons);
+      Hashtbl.add tbl "car" (Value.Function Milho_core.car);
+      Hashtbl.add tbl "cdr" (Value.Function Milho_core.cdr);
 
       Hashtbl.add tbl "println" (Value.Function Milho_core.println);
       tbl

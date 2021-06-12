@@ -69,6 +69,36 @@ let less_than args =
       Value.False
   | _ -> raise (Invalid_argument "Milho_core.less_than")
 
+let greater_than args =
+  match cmp args with
+  | Value.Number (n, _) ->
+    if n > 0 then
+      Value.True
+    else
+      Value.False
+  | _ -> raise (Invalid_argument "Milho_core.less_than")
+
+let equal args =
+  match args with
+  | a :: b :: _ -> (
+    match a, b with
+    | Value.Symbol a, Value.Symbol b ->
+      Value.of_boolean (a == b)
+    | Value.String a, Value.String b ->
+      Value.of_boolean (a == b)
+    | Value.True, Value.True ->
+      Value.True
+    | Value.False, Value.False ->
+      Value.True
+    | Value.Nil, Value.Nil ->
+      Value.True
+    | Value.Number _, Value.Number _ ->
+      Value.of_boolean (Value.to_number a == Value.to_number b)
+    | _ ->
+      Value.False
+  )
+  | _ -> raise (Invalid_argument "Milho_core.equal")
+
 let str args =
   args
   |> List.map Value.to_string
@@ -80,3 +110,25 @@ let println args =
   |> print_endline;
 
   Value.Nil
+
+let rec cons args =
+  match args with
+  | [] -> Value.List []
+  | value :: [] -> Value.List [value]
+  | value :: lst :: [] -> (
+    match lst with
+    | Value.List lst -> Value.List (value :: lst)
+    | v -> Value.List [value; v]
+  )
+  | value :: rest ->
+    cons [value; (cons rest)]
+
+let car args =
+  match args with
+  | Value.List (value :: _) :: [] -> value
+  | _ -> raise (Invalid_argument "Milho_core.car")
+
+let cdr args =
+  match args with
+  | Value.List (_ :: tl ) :: [] -> Value.List tl
+  | _ -> raise (Invalid_argument "Milho_core.cdr")

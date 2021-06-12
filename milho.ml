@@ -42,7 +42,7 @@ let read_file channel =
   really_input channel buf 0 size;
   Bytes.unsafe_to_string buf
 
-let run_file name =
+let run_file scope name =
   let rec loop_in_expressions scanner scope =
     let exp = Reader.read scanner in
     try
@@ -58,11 +58,12 @@ let run_file name =
   in
   let source = name |> open_in |> read_file in
   let scanner = Scanner.init source in
-  let scope = Scope.init () in
     loop_in_expressions scanner scope
 
 let () =
   if (Array.length Sys.argv) < 2 then
     print_endline "Need a file, example ./milho example.milho"
   else
-   run_file Sys.argv.(1)
+    let scope = Scope.init () in
+      run_file scope "core.milho";
+      run_file scope Sys.argv.(1)

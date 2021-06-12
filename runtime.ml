@@ -34,6 +34,10 @@ let rec value_of_expression exp =
   | Reader.Quote expression -> Value.Quote (value_of_expression expression)
   | Reader.Eof -> Value.Nil
 
+let bind scope name value =
+  Scope.def scope (expect_symbol "Invalid name " name) value;
+  scope
+
 let rec eval scope exp =
   match exp with
   | Value.List xs -> (
@@ -45,10 +49,17 @@ let rec eval scope exp =
       | Value.Symbol "def" -> def_binding scope args
       | Value.Symbol "fn" -> anon_fn scope args
       | Value.Symbol "if" -> if_form scope args
+      | Value.Symbol "macro" -> anon_macro scope args
       | f -> (
         match eval scope f with
-        | Value.Function f' -> f' (List.map (eval scope) args)
-        | Value.Macro f' -> f' args
+        | Value.Function f' ->
+          args
+          |> List.map (eval scope)
+          |> f'
+        | Value.Macro f' ->
+          args
+          |> f'
+          |> eval scope
         | value ->
           raise (Runtime_error ((Value.to_string value) ^ " is not a function"))
       )
@@ -60,18 +71,19 @@ let rec eval scope exp =
   | value -> value
 and eval_list scope forms =
   List.fold_left (fun _ form -> eval scope form) Value.Nil forms
-and bind scope name value =
-  Scope.def scope (expect_symbol "Invalid name " name) value;
-  scope
 and let_binding scope args =
   match args with
   | bindings :: body ->
     eval_list (scope_from_bindings scope bindings) body
-  | _ -> raise (Runtime_error "Invalid let binding ")   
+  | _ -> raise (Runtime_error "Invalid let binding ")
+and bind_eval scope name value =
+  value
+  |> eval scope
+  |> bind scope name
 and scope_from_bindings scope bindings =
   bindings
   |> expect_list "Invalid binding "
-  |> fold_pair_left bind (Scope.push_empty scope)
+  |> fold_pair_left bind_eval (Scope.push_empty scope)
 and def_binding scope args =
   match args with
   | name :: value :: _ -> (
@@ -80,7 +92,7 @@ and def_binding scope args =
       value
   )
   | _ -> raise (Runtime_error "Invalid binding")
-and anon_fn scope args_and_body =
+and create_fn scope args_and_body =
   let bind_arguments args =
     args_and_body
     |> List.hd
@@ -92,7 +104,11 @@ and anon_fn scope args_and_body =
     |> List.tl
     |> eval_list (bind_arguments args)
   in
-    Value.Function fn
+    fn
+and anon_fn scope args_and_body =
+  Value.Function (create_fn scope args_and_body)
+and anon_macro scope args_and_body =
+  Value.Macro (create_fn scope args_and_body)
 and if_form scope forms =
   match forms with
   | predicate :: consequense :: [] ->

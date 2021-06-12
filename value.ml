@@ -24,6 +24,9 @@ let rec to_string v =
   | Nil -> "Nil"
   | Quote v -> "'" ^ (to_string v)
 
+let of_boolean v =
+  if v then True else False
+
 let rec to_boolean v =
   match v with
   | List [] -> false
@@ -33,3 +36,8 @@ let rec to_boolean v =
   | Nil -> false
   | Quote v -> to_boolean v
   | _ -> true
+
+let to_number v =
+  match v with
+  | Number (a, b) -> Some (a / b)
+  | _ -> None
