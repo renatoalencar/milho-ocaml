@@ -12,3 +12,6 @@
 
 (defn (abs x)
   (if (< x 0) (- x) x))
+
+(defn (empty? lst)
+  (= (length lst) 0))

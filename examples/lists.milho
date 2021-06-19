@@ -1,0 +1,8 @@
+(println (length '(1 2 3)))
+
+(println (empty? '(1)))
+
+(println (empty? '()))
+
+(println (car '(1 2 3)))
+(println (cdr '(1 2 3)))

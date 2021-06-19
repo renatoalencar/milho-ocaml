@@ -1,0 +1,7 @@
+(println True False)
+
+(println (and True False) (and True True))
+
+(println (or True (println "this is not printed")))
+
+(println (and (println "this is printed") (println "this is not)))

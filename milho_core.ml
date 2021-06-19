@@ -63,19 +63,13 @@ let cmp args =
 let less_than args =
   match cmp args with
   | Value.Number (n, _) ->
-    if n < 0 then
-      Value.True
-    else
-      Value.False
+    Value.of_boolean (n < 0)
   | _ -> raise (Invalid_argument "Milho_core.less_than")
 
 let greater_than args =
   match cmp args with
   | Value.Number (n, _) ->
-    if n > 0 then
-      Value.True
-    else
-      Value.False
+    Value.of_boolean (n > 0)
   | _ -> raise (Invalid_argument "Milho_core.less_than")
 
 let equal args =
@@ -93,7 +87,7 @@ let equal args =
     | Value.Nil, Value.Nil ->
       Value.True
     | Value.Number _, Value.Number _ ->
-      Value.of_boolean (Value.to_number a == Value.to_number b)
+      Value.of_boolean (Value.to_number a = Value.to_number b)
     | _ ->
       Value.False
   )
@@ -132,3 +126,8 @@ let cdr args =
   match args with
   | Value.List (_ :: tl ) :: [] -> Value.List tl
   | _ -> raise (Invalid_argument "Milho_core.cdr")
+
+let length args =
+  match args with
+  | Value.List lst :: [] -> Value.Number (List.length lst, 1)
+  | _ -> raise (Invalid_argument "Milho_core.length")

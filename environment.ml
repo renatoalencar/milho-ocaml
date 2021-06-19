@@ -17,6 +17,7 @@ let init () =
       Hashtbl.add tbl "cons" (Value.Function Milho_core.cons);
       Hashtbl.add tbl "car" (Value.Function Milho_core.car);
       Hashtbl.add tbl "cdr" (Value.Function Milho_core.cdr);
+      Hashtbl.add tbl "length" (Value.Function Milho_core.length);
 
       Hashtbl.add tbl "println" (Value.Function Milho_core.println);
       tbl
