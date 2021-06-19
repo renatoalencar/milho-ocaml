@@ -34,70 +34,70 @@ let rec value_of_expression exp =
   | Reader.Quote expression -> Value.Quote (value_of_expression expression)
   | Reader.Eof -> Value.Nil
 
-let bind scope name value =
-  Scope.def scope (expect_symbol "Invalid name " name) value;
-  scope
+let bind env name value =
+  Environment.def env (expect_symbol "Invalid name " name) value;
+  env
 
-let rec eval scope exp =
+let rec eval env exp =
   match exp with
   | Value.List xs -> (
     match xs with
     | [] -> Value.Nil
     | f :: args -> (
       match f with
-      | Value.Symbol "let" -> let_binding scope args
-      | Value.Symbol "def" -> def_binding scope args
-      | Value.Symbol "fn" -> anon_fn scope args
-      | Value.Symbol "if" -> if_form scope args
-      | Value.Symbol "macro" -> anon_macro scope args
+      | Value.Symbol "let" -> let_binding env args
+      | Value.Symbol "def" -> def_binding env args
+      | Value.Symbol "fn" -> anon_fn env args
+      | Value.Symbol "if" -> if_form env args
+      | Value.Symbol "macro" -> anon_macro env args
       | f -> (
-        match eval scope f with
+        match eval env f with
         | Value.Function f' ->
           args
-          |> List.map (eval scope)
+          |> List.map (eval env)
           |> f'
         | Value.Macro f' ->
           args
           |> f'
-          |> eval scope
+          |> eval env
         | value ->
           raise (Runtime_error ((Value.to_string value) ^ " is not a function"))
       )
     )
   )
   | Value.Symbol s ->
-    Scope.find scope s
+    Environment.find env s
   | Value.Quote v -> v
   | value -> value
-and eval_list scope forms =
-  List.fold_left (fun _ form -> eval scope form) Value.Nil forms
-and let_binding scope args =
+and eval_list env forms =
+  List.fold_left (fun _ form -> eval env form) Value.Nil forms
+and let_binding env args =
   match args with
   | bindings :: body ->
-    eval_list (scope_from_bindings scope bindings) body
+    eval_list (env_from_bindings env bindings) body
   | _ -> raise (Runtime_error "Invalid let binding ")
-and bind_eval scope name value =
+and bind_eval env name value =
   value
-  |> eval scope
-  |> bind scope name
-and scope_from_bindings scope bindings =
+  |> eval env
+  |> bind env name
+and env_from_bindings env bindings =
   bindings
   |> expect_list "Invalid binding "
-  |> fold_pair_left bind_eval (Scope.push_empty scope)
-and def_binding scope args =
+  |> fold_pair_left bind_eval (Environment.push_empty env)
+and def_binding env args =
   match args with
   | name :: value :: _ -> (
-    let value = eval scope value in
-      Scope.def scope (expect_symbol "Invalid name " name) value;
+    let value = eval env value in
+      Environment.def env (expect_symbol "Invalid name " name) value;
       value
   )
   | _ -> raise (Runtime_error "Invalid binding")
-and create_fn scope args_and_body =
+and create_fn env args_and_body =
   let bind_arguments args =
     args_and_body
     |> List.hd
     |> (expect_list "Not a list")
-    |> List.fold_left2 (fun s v n -> bind s n v) (Scope.push_empty scope) args
+    |> List.fold_left2 (fun s v n -> bind s n v) (Environment.push_empty env) args
   in
   let fn args =
     args_and_body
@@ -105,20 +105,20 @@ and create_fn scope args_and_body =
     |> eval_list (bind_arguments args)
   in
     fn
-and anon_fn scope args_and_body =
-  Value.Function (create_fn scope args_and_body)
-and anon_macro scope args_and_body =
-  Value.Macro (create_fn scope args_and_body)
-and if_form scope forms =
+and anon_fn env args_and_body =
+  Value.Function (create_fn env args_and_body)
+and anon_macro env args_and_body =
+  Value.Macro (create_fn env args_and_body)
+and if_form env forms =
   match forms with
   | predicate :: consequense :: [] ->
-    if predicate |> eval scope |> Value.to_boolean then
-      eval scope consequense
+    if predicate |> eval env |> Value.to_boolean then
+      eval env consequense
     else
       Value.Nil
   | predicate :: consequense :: otherwise :: [] ->
-    if predicate |> eval scope |> Value.to_boolean then
-      eval scope consequense
+    if predicate |> eval env |> Value.to_boolean then
+      eval env consequense
     else
-      eval scope otherwise
+      eval env otherwise
   | _ -> Value.Nil

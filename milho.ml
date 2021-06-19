@@ -42,28 +42,28 @@ let read_file channel =
   really_input channel buf 0 size;
   Bytes.unsafe_to_string buf
 
-let run_file scope name =
-  let rec loop_in_expressions scanner scope =
+let run_file env name =
+  let rec loop_in_expressions scanner env =
     let exp = Reader.read scanner in
     try
       exp
       |> Runtime.stop_on_eof
       |> Runtime.value_of_expression
-      |> Runtime.eval scope
+      |> Runtime.eval env
       |> ignore;
 
-      loop_in_expressions scanner scope
+      loop_in_expressions scanner env
     with
     | Runtime.Stop_execution -> ()
   in
   let source = name |> open_in |> read_file in
   let scanner = Scanner.init source in
-    loop_in_expressions scanner scope
+    loop_in_expressions scanner env
 
 let () =
   if (Array.length Sys.argv) < 2 then
     print_endline "Need a file, example ./milho example.milho"
   else
-    let scope = Scope.init () in
-      run_file scope "core.milho";
-      run_file scope Sys.argv.(1)
+    let env = Environment.init () in
+      run_file env "core.milho";
+      run_file env Sys.argv.(1)

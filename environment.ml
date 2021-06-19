@@ -23,21 +23,21 @@ let init () =
   in
     [builtin]
 
-let def scope name value =
-  let current = List.hd scope in
+let def env name value =
+  let current = List.hd env in
     Hashtbl.add current name value
 
-let push scope name value =
+let push env name value =
   let tbl = Hashtbl.create 1024 in
     Hashtbl.add tbl name value;
-    tbl :: scope
+    tbl :: env
 
-let push_empty scope =
+let push_empty env =
   let tbl = Hashtbl.create 1024 in
-    tbl :: scope
+    tbl :: env
 
-let rec find scope name =
-  match scope with
+let rec find env name =
+  match env with
   | [] -> raise (Variable_not_found (name ^ " variable is not defined"))
   | current :: upper ->
     if Hashtbl.mem current name then 
